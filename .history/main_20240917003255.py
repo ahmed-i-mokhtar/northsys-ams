@@ -146,9 +146,12 @@ async def get_pano_image(location: str):
 async def get_depth_image(location: str):
     # Path to the image
     image_path = f"./data/server_depth_images/{location}.png"
-    # Check if the file exists
+   # Check if the file exists
     if os.path.exists(image_path):
         return FileResponse(image_path, media_type="image/jpeg")
+    else:
+        return {"error": "Image not found"}
+
     else:
         return {"error": "Image not found"}
 
