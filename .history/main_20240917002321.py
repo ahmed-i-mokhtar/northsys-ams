@@ -166,8 +166,16 @@ async def get_depth_image(location: str):
 
 @app.get("/get_locations")
 async def get_locations():
+
+    # get file names in the directory
+    files = os.listdir("./data/server_pano_images")
+    locations = []
+    for file in files:
+        location = file.split(".png")[0]
+        locations.append(location)
+
     # Return  response
-    return locations_list
+    return locations
 
 
 if __name__ == "__main__":
