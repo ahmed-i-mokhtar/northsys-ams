@@ -56,7 +56,7 @@ async def get_depth_image(location: str):
         # Return the binary content as a response
         headers = {
             "Content-Type": "application/octet-stream",  # Indicates binary data
-            "Content-Disposition": f"attachment; filename={location}.png",
+            "Content-Disposition": f"attachment; filename={location}_float32.png",
         }
 
         return Response(content=file_data, headers=headers)
