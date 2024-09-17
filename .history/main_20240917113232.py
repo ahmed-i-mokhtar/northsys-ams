@@ -192,17 +192,14 @@ async def get_locations():
 
 
 @app.get("/get_geo_location/{location}")
-async def get_geo_location(ego_location: str, location: str):
+async def get_geo_location(ego_location: str, location: list):
     ego_pose_path = f"./data/server_ego_poses/{ego_location}.json"
     with open(ego_pose_path, "r") as f:
         ego_pose = json.load(f)
-        location_x = float(location.split("_")[0])
-        location_y = float(location.split("_")[1])
-        location_z = float(location.split("_")[2])
         point_translation = [
-            ego_pose["translation"][0] + location_x,
-            ego_pose["translation"][1] + location_y,
-            ego_pose["translation"][2] + location_z,
+            ego_pose["translation"] + location[0],
+            ego_pose["translation"] + location[1],
+            ego_pose["translation"] + location[2],
         ]
         geo_location = compute_new_location_with_quaternion(
             reference_loc, point_translation, ego_pose["rotation"]

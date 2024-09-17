@@ -109,7 +109,6 @@ locations_list = [
     "42.330197_-83.042162_184.23",
     "42.330238_-83.042190_184.16",
 ]
-reference_loc = {"lat": 42.33402017629453, "lon": -83.04563309009228, "alt": 0.0}
 
 
 # Function to compute new GPS location given translation and yaw
@@ -192,22 +191,9 @@ async def get_locations():
 
 
 @app.get("/get_geo_location/{location}")
-async def get_geo_location(ego_location: str, location: str):
-    ego_pose_path = f"./data/server_ego_poses/{ego_location}.json"
-    with open(ego_pose_path, "r") as f:
-        ego_pose = json.load(f)
-        location_x = float(location.split("_")[0])
-        location_y = float(location.split("_")[1])
-        location_z = float(location.split("_")[2])
-        point_translation = [
-            ego_pose["translation"][0] + location_x,
-            ego_pose["translation"][1] + location_y,
-            ego_pose["translation"][2] + location_z,
-        ]
-        geo_location = compute_new_location_with_quaternion(
-            reference_loc, point_translation, ego_pose["rotation"]
-        )
-    return geo_location
+async def get_locations(location: list):
+
+    return locations_list
 
 
 if __name__ == "__main__":

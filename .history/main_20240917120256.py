@@ -200,9 +200,9 @@ async def get_geo_location(ego_location: str, location: str):
         location_y = float(location.split("_")[1])
         location_z = float(location.split("_")[2])
         point_translation = [
-            ego_pose["translation"][0] + location_x,
-            ego_pose["translation"][1] + location_y,
-            ego_pose["translation"][2] + location_z,
+            ego_pose["translation"] + location_x,
+            ego_pose["translation"] + location_y,
+            ego_pose["translation"] + location_z,
         ]
         geo_location = compute_new_location_with_quaternion(
             reference_loc, point_translation, ego_pose["rotation"]
