@@ -11,12 +11,8 @@ from geopy.distance import geodesic
 import math
 from pyquaternion import Quaternion
 import numpy as np
-import logging
 
 app = FastAPI()
-logger = logging.getLogger("uvicorn.error")
-logger.setLevel(logging.DEBUG)
-
 
 locations_list = [
     "42.331515_-83.038699_185.29",
@@ -119,15 +115,15 @@ locations_list = [
 reference_loc = {"lat": 42.33402017629453, "lon": -83.04563309009228, "alt": 0.0}
 
 sensor_calibration = {
-    "camera_intrinsic": [
+    camera_intrinsic: [
         [512, 0.0, 0.512],
         [0.0, 512, 0.512],
         [0.0, 0.0, 1.0],
     ],
-    "rotation": [0.7071067811865476, -0.7071067811865475, 0.0, 0.0],
-    "sensor_token": "7w7q9c6sp6jzxnixqx7u4h-cs",
-    "token": "7w7q9c6sp6jzxnixqx7u4h",
-    "translation": [0, 0, 0],
+    rotation: [0.7071067811865476, -0.7071067811865475, 0.0, 0.0],
+    sensor_token: "7w7q9c6sp6jzxnixqx7u4h-cs",
+    token: "7w7q9c6sp6jzxnixqx7u4h",
+    translation: [0, 0, 0],
 }
 
 
@@ -215,14 +211,12 @@ async def get_geo_location(ego_location: str, location: str):
     ego_pose_path = f"./data/server_ego_poses/{ego_location}.json"
     with open(ego_pose_path, "r") as f:
         ego_pose = json.load(f)
-        location_z = float(location.split("_")[0])
-        location_x = float(location.split("_")[1])
-        location_y = float(location.split("_")[2])
-        point_camera = [location_x, location_y, location_z]
-        logger.debug(f"point_camera: {point_camera}")
+        location_x = float(location.split("_")[0])
+        location_y = float(location.split("_")[1])
+        location_z = float(location.split("_")[2])
 
-        point_camera_hom = np.array(
-            point_camera
+        point_camera_hom = np.append(
+            [location_x, location_y, location_z, 1]
         )  # Convert to homogeneous coordinates (x, y, z, 1)
 
         rotation_camera_to_ego = Quaternion(
@@ -234,8 +228,6 @@ async def get_geo_location(ego_location: str, location: str):
             np.dot(rotation_camera_to_ego, point_camera) + translation_camera_to_ego
         )
 
-        logger.debug(f"point_ego: {point_ego}")
-
         # 2. Transform point from ego vehicle frame to world frame
         rotation_ego_to_world = Quaternion(ego_pose["rotation"]).rotation_matrix
         translation_ego_to_world = np.array(ego_pose["translation"])
@@ -243,7 +235,6 @@ async def get_geo_location(ego_location: str, location: str):
         point_world = (
             np.dot(rotation_ego_to_world, point_ego) + translation_ego_to_world
         )
-        logger.debug(f"point_world: {point_world}")
 
         geo_location = compute_new_location_with_quaternion(
             reference_loc, point_world, ego_pose["rotation"]

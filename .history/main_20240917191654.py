@@ -215,8 +215,8 @@ async def get_geo_location(ego_location: str, location: str):
     ego_pose_path = f"./data/server_ego_poses/{ego_location}.json"
     with open(ego_pose_path, "r") as f:
         ego_pose = json.load(f)
-        location_z = float(location.split("_")[0])
-        location_x = float(location.split("_")[1])
+        location_x = float(location.split("_")[0])
+        location_z = -float(location.split("_")[1])
         location_y = float(location.split("_")[2])
         point_camera = [location_x, location_y, location_z]
         logger.debug(f"point_camera: {point_camera}")

@@ -9,14 +9,8 @@ from starlette.middleware.cors import CORSMiddleware
 import glob
 from geopy.distance import geodesic
 import math
-from pyquaternion import Quaternion
-import numpy as np
-import logging
 
 app = FastAPI()
-logger = logging.getLogger("uvicorn.error")
-logger.setLevel(logging.DEBUG)
-
 
 locations_list = [
     "42.331515_-83.038699_185.29",
@@ -118,17 +112,20 @@ locations_list = [
 ]
 reference_loc = {"lat": 42.33402017629453, "lon": -83.04563309009228, "alt": 0.0}
 
-sensor_calibration = {
-    "camera_intrinsic": [
-        [512, 0.0, 0.512],
-        [0.0, 512, 0.512],
-        [0.0, 0.0, 1.0],
-    ],
-    "rotation": [0.7071067811865476, -0.7071067811865475, 0.0, 0.0],
-    "sensor_token": "7w7q9c6sp6jzxnixqx7u4h-cs",
-    "token": "7w7q9c6sp6jzxnixqx7u4h",
-    "translation": [0, 0, 0],
-}
+
+def quaternion_to_yaw(quaternion):
+    """
+    Convert quaternion to yaw (heading) in degrees.
+    Quaternion format: [w, x, y, z]
+    Yaw is the angle around the z-axis.
+    """
+    w, x, y, z = quaternion
+    # Compute yaw angle (rotation around z-axis)
+    yaw = math.atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z))
+
+    # Convert from radians to degrees
+    yaw_degrees = math.degrees(yaw)
+    return yaw_degrees
 
 
 # Function to compute new GPS location given translation and yaw
@@ -215,38 +212,31 @@ async def get_geo_location(ego_location: str, location: str):
     ego_pose_path = f"./data/server_ego_poses/{ego_location}.json"
     with open(ego_pose_path, "r") as f:
         ego_pose = json.load(f)
-        location_z = float(location.split("_")[0])
-        location_x = float(location.split("_")[1])
-        location_y = float(location.split("_")[2])
-        point_camera = [location_x, location_y, location_z]
-        logger.debug(f"point_camera: {point_camera}")
+        location_x = float(location.split("_")[0])
+        location_y = float(location.split("_")[1])
+        location_z = float(location.split("_")[2])
 
-        point_camera_hom = np.array(
-            point_camera
-        )  # Convert to homogeneous coordinates (x, y, z, 1)
+        # Apply RX + T
+        rotation_quat = ego_pose["rotation"]
 
-        rotation_camera_to_ego = Quaternion(
-            sensor_calibration["rotation"]
-        ).rotation_matrix
-        translation_camera_to_ego = np.array(sensor_calibration["translation"])
+        rotation_yaw = quaternion_to_yaw(rotation_quat)
+        # log the rotation_yaw
+        app.logger.info(rotation_yaw)
 
-        point_ego = (
-            np.dot(rotation_camera_to_ego, point_camera) + translation_camera_to_ego
+        location_x = location_x * math.cos(rotation_yaw) - location_y * math.sin(
+            rotation_yaw
+        )
+        location_y = location_x * math.sin(rotation_yaw) + location_y * math.cos(
+            rotation_yaw
         )
 
-        logger.debug(f"point_ego: {point_ego}")
-
-        # 2. Transform point from ego vehicle frame to world frame
-        rotation_ego_to_world = Quaternion(ego_pose["rotation"]).rotation_matrix
-        translation_ego_to_world = np.array(ego_pose["translation"])
-
-        point_world = (
-            np.dot(rotation_ego_to_world, point_ego) + translation_ego_to_world
-        )
-        logger.debug(f"point_world: {point_world}")
-
+        point_translation = [
+            ego_pose["translation"][0] + location_x,
+            ego_pose["translation"][1] + location_y,
+            ego_pose["translation"][2] + location_z,
+        ]
         geo_location = compute_new_location_with_quaternion(
-            reference_loc, point_world, ego_pose["rotation"]
+            reference_loc, point_translation, ego_pose["rotation"]
         )
     return geo_location
 
