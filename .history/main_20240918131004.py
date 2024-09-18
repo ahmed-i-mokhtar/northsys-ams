@@ -284,11 +284,12 @@ async def save_addressing_point(ego_location: str, location: str):
             reference_loc, point_world, ego_pose["rotation"]
         )
 
+        geo_location_x_str = str(geo_location[0]).format(".6f")
+        geo_location_y_str = str(geo_location[1]).format(".6f")
+        geo_location_z_str = str(geo_location[2]).format(".6f")
         geo_location_str = (
-            f"{geo_location[0]:.9f}_{geo_location[1]:.9f}_{geo_location[2]:.2f}"
+            f"{geo_location_x_str}_{geo_location_y_str}_{geo_location_z_str}"
         )
-
-        logger.debug(f"geo_location_str: {geo_location_str}")
 
         point_world_str = f"{point_world[0]}_{point_world[1]}_{point_world[2]}"
         addressing_points[geo_location_str] = point_world_str
@@ -334,14 +335,9 @@ async def get_camera_addressing_points(ego_location: str):
                 point_ego - translation_camera_to_ego,
             )
 
-            distance = math.sqrt(
-                point_camera[0] ** 2 + point_camera[1] ** 2 + point_camera[2] ** 2
+            camera_addressing_points_list.append(
+                f"{point_camera[0]}_{point_camera[1]}_{point_camera[2]}"
             )
-
-            if distance < 25:
-                camera_addressing_points_list.append(
-                    f"{point_camera[0]}_{point_camera[1]}_{point_camera[2]}"
-                )
 
     return camera_addressing_points_list
 
