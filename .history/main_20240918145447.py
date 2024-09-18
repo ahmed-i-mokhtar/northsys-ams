@@ -307,7 +307,6 @@ async def save_addressing_point(ego_location: str, location: str):
 
 @app.get("/get_world_addressing_points")
 async def get_world_addressing_points():
-    addressing_points_path = f"./addressing_points.json"
     addressing_points = {}
     if os.path.exists(addressing_points_path):
         with open(addressing_points_path, "r") as f:
@@ -321,11 +320,6 @@ async def get_world_addressing_points():
 
 @app.get("/get_camera_addressing_points")
 async def get_camera_addressing_points(ego_location: str):
-    addressing_points_path = f"./addressing_points.json"
-    addressing_points = {}
-    if os.path.exists(addressing_points_path):
-        with open(addressing_points_path, "r") as f:
-            addressing_points = json.load(f)
     camera_addressing_points_list = []
     ego_pose_path = f"./data/server_ego_poses/{ego_location}.json"
     with open(ego_pose_path, "r") as f:
@@ -368,11 +362,6 @@ async def get_camera_addressing_points(ego_location: str):
 
 @app.get("/get_geo_addressing_points")
 async def get_addressing_points():
-    addressing_points_path = f"./addressing_points.json"
-    addressing_points = {}
-    if os.path.exists(addressing_points_path):
-        with open(addressing_points_path, "r") as f:
-            addressing_points = json.load(f)
     geo_list = []
     for key, value in addressing_points.items():
         geo_list.append(key)
@@ -381,17 +370,8 @@ async def get_addressing_points():
 
 @app.get("/delete_addressing_point")
 async def delete_addressing_point(geo_location: str):
-    addressing_points_path = f"./addressing_points.json"
-    addressing_points = {}
-    if os.path.exists(addressing_points_path):
-        with open(addressing_points_path, "r") as f:
-            addressing_points = json.load(f)
     if geo_location in addressing_points:
         del addressing_points[geo_location]
-
-        # save the addressing points
-        with open(addressing_points_path, "w") as f:
-            json.dump(addressing_points, f)
         return addressing_points
     else:
         return {"error": "Addressing point not found"}
@@ -399,16 +379,7 @@ async def delete_addressing_point(geo_location: str):
 
 @app.get("/delete_all_addressing_points")
 async def delete_all_addressing_point():
-    addressing_points_path = f"./addressing_points.json"
-    addressing_points = {}
-    if os.path.exists(addressing_points_path):
-        with open(addressing_points_path, "r") as f:
-            addressing_points = json.load(f)
     addressing_points.clear()
-
-    # save the addressing points
-    with open(addressing_points_path, "w") as f:
-        json.dump(addressing_points, f)
 
 
 if __name__ == "__main__":
