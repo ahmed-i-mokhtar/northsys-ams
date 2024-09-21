@@ -16,15 +16,7 @@ import logging
 app = FastAPI()
 logger = logging.getLogger("uvicorn.error")
 logger.setLevel(logging.DEBUG)
-origins = ["*"]
-# Configure CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,  # Adjust this to your local development URL
-    allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods (GET, POST, etc.)
-    allow_headers=["*"],  # Allows all headers
-)
+
 
 locations_list = [
     "42.331515_-83.038699_185.29",
@@ -167,6 +159,22 @@ def compute_new_location_with_quaternion(reference_gps, translation, quaternion)
 
     # Return new latitude, longitude, and altitude
     return new_location.latitude, new_location.longitude, new_altitude
+
+
+origins = ["*"]
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "https://northsys-ams-3akpi.ondigitalocean.app/",
+        "https://northsys-ams-3akpi.ondigitalocean.app",
+        "northsys-ams-3akpi.ondigitalocean.app",
+    ],  # Adjust this to your local development URL
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allows all headers
+)
 
 
 @app.get("/")

@@ -23,8 +23,7 @@ app.add_middleware(
     allow_origins=origins,  # Adjust this to your local development URL
     allow_credentials=True,
     allow_methods=["*"],  # Allows all methods (GET, POST, etc.)
-    allow_headers=["*"],  # Allows all headers
-)
+    al
 
 locations_list = [
     "42.331515_-83.038699_185.29",
@@ -167,6 +166,10 @@ def compute_new_location_with_quaternion(reference_gps, translation, quaternion)
 
     # Return new latitude, longitude, and altitude
     return new_location.latitude, new_location.longitude, new_altitude
+
+
+low_headers=["*"],  # Allows all headers
+)
 
 
 @app.get("/")
