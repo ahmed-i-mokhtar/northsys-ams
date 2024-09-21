@@ -167,7 +167,6 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "https://northsys-ams-3akpi.ondigitalocean.app/",
-        "northsys-ams-3akpi.ondigitalocean.app",
     ],  # Adjust this to your local development URL
     allow_credentials=True,
     allow_methods=["*"],  # Allows all methods (GET, POST, etc.)

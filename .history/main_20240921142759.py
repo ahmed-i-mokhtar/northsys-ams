@@ -165,9 +165,7 @@ def compute_new_location_with_quaternion(reference_gps, translation, quaternion)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",
-        "https://northsys-ams-3akpi.ondigitalocean.app/",
-        "northsys-ams-3akpi.ondigitalocean.app",
+        "http://localhost:5173"
     ],  # Adjust this to your local development URL
     allow_credentials=True,
     allow_methods=["*"],  # Allows all methods (GET, POST, etc.)
