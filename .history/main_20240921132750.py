@@ -292,12 +292,12 @@ async def save_addressing_point(
         )
 
         geo_location_str = (
-            f"{geo_location[0]:.9f}_{geo_location[1]:.9f}_{geo_location[2]:.2f}_{type}"
+            f"{geo_location[0]:.9f}_{geo_location[1]:.9f}_{geo_location[2]:.2f}"
         )
 
         logger.debug(f"geo_location_str: {geo_location_str}")
 
-        point_world_str = f"{point_world[0]}_{point_world[1]}_{point_world[2]}"
+        point_world_str = f"{point_world[0]}_{point_world[1]}_{point_world[2]}_{type}"
         addressing_points[geo_location_str] = point_world_str
 
     # Save the addressing points
@@ -338,6 +338,8 @@ async def update_addressing_point(id: str, type: str = "Undefined"):
                         + value.split("_")[1]
                         + "_"
                         + value.split("_")[2]
+                        + "_"
+                        + type
                     )
                     break
 

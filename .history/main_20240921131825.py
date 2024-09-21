@@ -292,58 +292,17 @@ async def save_addressing_point(
         )
 
         geo_location_str = (
-            f"{geo_location[0]:.9f}_{geo_location[1]:.9f}_{geo_location[2]:.2f}_{type}"
+            f"{geo_location[0]:.9f}_{geo_location[1]:.9f}_{geo_location[2]:.2f}"
         )
 
         logger.debug(f"geo_location_str: {geo_location_str}")
 
-        point_world_str = f"{point_world[0]}_{point_world[1]}_{point_world[2]}"
+        point_world_str = f"{point_world[0]}_{point_world[1]}_{point_world[2]}_{type}"
         addressing_points[geo_location_str] = point_world_str
 
     # Save the addressing points
     with open(addressing_points_path, "w") as f:
         json.dump(addressing_points, f)
-
-    return addressing_points
-
-
-@app.get("/update_addressing_point_type/{id}")
-async def update_addressing_point(id: str, type: str = "Undefined"):
-    addressing_points_path = f"./addressing_points.json"
-    addressing_points = {}
-    if os.path.exists(addressing_points_path):
-        with open(addressing_points_path, "r") as f:
-            addressing_points = json.load(f)
-            x = id.split("_")[0]
-            y = id.split("_")[1]
-            z = id.split("_")[2]
-            location_key = x + "_" + y + "_" + z
-
-            updated_addressing_points = addressing_points.copy()
-            # find the key in the addressing points
-            for key, value in updated_addressing_points.items():
-                current_key = (
-                    key.split("_")[0]
-                    + "_"
-                    + key.split("_")[1]
-                    + "_"
-                    + key.split("_")[2]
-                )
-                if current_key == location_key:
-                    # remove the old key and add the new key
-                    addressing_points.pop(key)
-                    addressing_points[location_key + "_" + type] = (
-                        value.split("_")[0]
-                        + "_"
-                        + value.split("_")[1]
-                        + "_"
-                        + value.split("_")[2]
-                    )
-                    break
-
-        # Save the addressing points
-        with open(addressing_points_path, "w") as f:
-            json.dump(addressing_points, f)
 
     return addressing_points
 

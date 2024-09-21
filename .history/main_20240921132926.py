@@ -338,6 +338,8 @@ async def update_addressing_point(id: str, type: str = "Undefined"):
                         + value.split("_")[1]
                         + "_"
                         + value.split("_")[2]
+                        + "_"
+                        + type
                     )
                     break
 
