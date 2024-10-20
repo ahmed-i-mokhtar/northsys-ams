@@ -26,14 +26,104 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
-locations_list = []
-
-locations = glob.glob("./data/server_camera_poses/*.json")
-for location in locations:
-    # use os path to get the file name
-    location_name = os.path.basename(location).split(".json")[0]
-    locations_list.append(location_name)
-
+locations_list = [
+    "42.331515_-83.038699_185.29",
+    "42.331553_-83.038734_185.39",
+    "42.331593_-83.038761_185.42",
+    "42.331634_-83.038786_185.40",
+    "42.331675_-83.038811_185.39",
+    "42.331718_-83.038832_185.28",
+    "42.331762_-83.038841_185.11",
+    "42.331805_-83.038826_184.97",
+    "42.331838_-83.038785_184.94",
+    "42.331862_-83.038734_184.92",
+    "42.331882_-83.038681_184.93",
+    "42.331894_-83.038623_185.07",
+    "42.331881_-83.038568_185.10",
+    "42.331853_-83.038523_185.13",
+    "42.331816_-83.038491_185.16",
+    "42.331777_-83.038463_185.17",
+    "42.331737_-83.038438_185.18",
+    "42.331697_-83.038413_185.16",
+    "42.331658_-83.038388_185.09",
+    "42.331618_-83.038369_185.07",
+    "42.331576_-83.038381_185.08",
+    "42.331547_-83.038424_185.06",
+    "42.331524_-83.038475_185.03",
+    "42.331501_-83.038526_185.01",
+    "42.331477_-83.038577_185.03",
+    "42.331454_-83.038628_185.07",
+    "42.331431_-83.038680_185.10",
+    "42.331408_-83.038732_185.10",
+    "42.331386_-83.038783_185.11",
+    "42.331363_-83.038835_185.10",
+    "42.331341_-83.038887_185.09",
+    "42.331318_-83.038938_185.07",
+    "42.331296_-83.038990_185.05",
+    "42.331274_-83.039042_185.03",
+    "42.331251_-83.039094_185.01",
+    "42.331229_-83.039146_184.98",
+    "42.331207_-83.039197_184.94",
+    "42.331184_-83.039248_184.91",
+    "42.331162_-83.039300_184.88",
+    "42.331139_-83.039351_184.85",
+    "42.331116_-83.039402_184.83",
+    "42.331094_-83.039454_184.80",
+    "42.331071_-83.039506_184.77",
+    "42.331049_-83.039558_184.74",
+    "42.331027_-83.039610_184.71",
+    "42.331005_-83.039663_184.69",
+    "42.330983_-83.039716_184.67",
+    "42.330962_-83.039768_184.66",
+    "42.330940_-83.039821_184.66",
+    "42.330918_-83.039874_184.66",
+    "42.330896_-83.039926_184.65",
+    "42.330873_-83.039979_184.58",
+    "42.330850_-83.040031_184.54",
+    "42.330827_-83.040083_184.49",
+    "42.330804_-83.040135_184.47",
+    "42.330780_-83.040186_184.49",
+    "42.330757_-83.040238_184.50",
+    "42.330734_-83.040290_184.52",
+    "42.330711_-83.040342_184.55",
+    "42.330688_-83.040394_184.58",
+    "42.330666_-83.040446_184.61",
+    "42.330643_-83.040499_184.63",
+    "42.330621_-83.040551_184.59",
+    "42.330599_-83.040604_184.56",
+    "42.330576_-83.040657_184.54",
+    "42.330554_-83.040709_184.51",
+    "42.330531_-83.040762_184.49",
+    "42.330509_-83.040814_184.48",
+    "42.330486_-83.040867_184.46",
+    "42.330464_-83.040919_184.47",
+    "42.330441_-83.040971_184.49",
+    "42.330418_-83.041024_184.53",
+    "42.330395_-83.041076_184.56",
+    "42.330371_-83.041127_184.53",
+    "42.330347_-83.041179_184.50",
+    "42.330323_-83.041230_184.51",
+    "42.330299_-83.041281_184.51",
+    "42.330275_-83.041332_184.53",
+    "42.330253_-83.041385_184.56",
+    "42.330232_-83.041438_184.58",
+    "42.330211_-83.041492_184.60",
+    "42.330190_-83.041546_184.59",
+    "42.330169_-83.041599_184.57",
+    "42.330147_-83.041652_184.55",
+    "42.330125_-83.041705_184.52",
+    "42.330103_-83.041757_184.50",
+    "42.330080_-83.041810_184.50",
+    "42.330057_-83.041862_184.52",
+    "42.330040_-83.041918_184.54",
+    "42.330036_-83.041978_184.55",
+    "42.330051_-83.042035_184.49",
+    "42.330083_-83.042077_184.38",
+    "42.330121_-83.042108_184.34",
+    "42.330160_-83.042135_184.29",
+    "42.330197_-83.042162_184.23",
+    "42.330238_-83.042190_184.16",
+]
 reference_loc = {"lat": 42.33402017629453, "lon": -83.04563309009228, "alt": 0.0}
 
 
@@ -51,7 +141,7 @@ sensor_calibration = {
 
 
 # Function to compute new GPS location given translation and yaw
-def compute_new_location(reference_gps, translation):
+def compute_new_location_with_quaternion(reference_gps, translation, quaternion):
     """
     Compute a new GPS location given a reference location, translations in meters, and a quaternion rotation.
 
@@ -119,7 +209,7 @@ async def get_locations():
 
 @app.get("/get_geo_location/{location}")
 async def get_geo_location(ego_location: str, location: str):
-    ego_pose_path = f"./data/server_camera_poses/{ego_location}.json"
+    ego_pose_path = f"./data/server_ego_poses/{ego_location}.json"
     with open(ego_pose_path, "r") as f:
         ego_pose = json.load(f)
         location_z = float(location.split("_")[0])
@@ -127,31 +217,30 @@ async def get_geo_location(ego_location: str, location: str):
         location_y = float(location.split("_")[2])
         point_camera = [location_x, location_y, location_z]
 
-        lat, lon, alt = (
-            float(ego_location.split("_")[0]),
-            float(ego_location.split("_")[1]),
-            float(ego_location.split("_")[2]),
-        )
-        reference_loc = {"lat": lat, "lon": lon, "alt": alt}
-
         point_camera_hom = np.array(
             point_camera
         )  # Convert to homogeneous coordinates (x, y, z, 1)
 
-        rotation_camera_to_ego = np.array(ego_pose["rotation_matrix"])
-        # translation_camera_to_ego = np.array(sensor_calibration["translation"])
+        rotation_camera_to_ego = Quaternion(
+            sensor_calibration["rotation"]
+        ).rotation_matrix
+        translation_camera_to_ego = np.array(sensor_calibration["translation"])
 
-        point_ego = np.dot(rotation_camera_to_ego, point_camera)
+        point_ego = (
+            np.dot(rotation_camera_to_ego, point_camera) + translation_camera_to_ego
+        )
 
-        # # 2. Transform point from ego vehicle frame to world frame
-        # rotation_ego_to_world = np.array(ego_pose["rotation"])
-        # translation_ego_to_world = np.array(ego_pose["translation"])
+        # 2. Transform point from ego vehicle frame to world frame
+        rotation_ego_to_world = Quaternion(ego_pose["rotation"]).rotation_matrix
+        translation_ego_to_world = np.array(ego_pose["translation"])
 
-        # point_world = (
-        #     np.dot(rotation_ego_to_world, point_ego) + translation_ego_to_world
-        # )
+        point_world = (
+            np.dot(rotation_ego_to_world, point_ego) + translation_ego_to_world
+        )
 
-        geo_location = compute_new_location(reference_loc, point_ego)
+        geo_location = compute_new_location_with_quaternion(
+            reference_loc, point_world, ego_pose["rotation"]
+        )
     return geo_location
 
 
@@ -159,7 +248,7 @@ async def get_geo_location(ego_location: str, location: str):
 async def save_addressing_point(
     ego_location: str, location: str, type: str = "Undefined"
 ):
-    ego_pose_path = f"./data/server_camera_poses/{ego_location}.json"
+    ego_pose_path = f"./data/server_ego_poses/{ego_location}.json"
     addressing_points_path = f"./addressing_points.json"
 
     addressing_points = {}
@@ -173,32 +262,30 @@ async def save_addressing_point(
         location_y = float(location.split("_")[2])
         point_camera = [location_x, location_y, location_z]
 
-        lat, lon, alt = (
-            float(ego_location.split("_")[0]),
-            float(ego_location.split("_")[1]),
-            float(ego_location.split("_")[2]),
-        )
-        reference_loc = {"lat": lat, "lon": lon, "alt": alt}
-
         point_camera_hom = np.array(
             point_camera
         )  # Convert to homogeneous coordinates (x, y, z, 1)
 
-        rotation_camera_to_ego = np.array(ego_pose["rotation_matrix"])
-        # translation_camera_to_ego = np.array(sensor_calibration["translation"])
+        rotation_camera_to_ego = Quaternion(
+            sensor_calibration["rotation"]
+        ).rotation_matrix
+        translation_camera_to_ego = np.array(sensor_calibration["translation"])
 
-        point_ego = np.dot(rotation_camera_to_ego, point_camera)
+        point_ego = (
+            np.dot(rotation_camera_to_ego, point_camera) + translation_camera_to_ego
+        )
 
-        # # 2. Transform point from ego vehicle frame to world frame
-        # rotation_ego_to_world = np.array(ego_pose["rotation"])
-        # translation_ego_to_world = np.array(ego_pose["translation"])
+        # 2. Transform point from ego vehicle frame to world frame
+        rotation_ego_to_world = Quaternion(ego_pose["rotation"]).rotation_matrix
+        translation_ego_to_world = np.array(ego_pose["translation"])
 
-        # point_world = (
-        #     np.dot(rotation_ego_to_world, point_ego) + translation_ego_to_world
-        # )
-        point_world = point_ego + np.array(ego_pose["translation_vector"])
+        point_world = (
+            np.dot(rotation_ego_to_world, point_ego) + translation_ego_to_world
+        )
 
-        geo_location = compute_new_location(reference_loc, point_world)
+        geo_location = compute_new_location_with_quaternion(
+            reference_loc, point_world, ego_pose["rotation"]
+        )
 
         geo_location_str = (
             f"{geo_location[0]:.9f}_{geo_location[1]:.9f}_{geo_location[2]:.2f}_{type}"
@@ -279,29 +366,32 @@ async def get_camera_addressing_points(ego_location: str):
         with open(addressing_points_path, "r") as f:
             addressing_points = json.load(f)
     camera_addressing_points_dict = {}
-    ego_pose_path = f"./data/server_camera_poses/{ego_location}.json"
+    ego_pose_path = f"./data/server_ego_poses/{ego_location}.json"
     with open(ego_pose_path, "r") as f:
         ego_pose = json.load(f)
         for key, value in addressing_points.items():
             # Transform the addressing point from world frame to ego frame
-            rotation_camera_to_ego = np.array(ego_pose["rotation_matrix"])
+            rotation_ego_to_world = Quaternion(ego_pose["rotation"]).rotation_matrix
+            translation_ego_to_world = np.array(ego_pose["translation"])
             point_world = np.array([float(i) for i in value.split("_")])
-            point_world = point_world - np.array(ego_pose["translation_vector"])
 
             # Inverse transformation
-            point_camera = np.dot(np.linalg.inv(rotation_camera_to_ego), point_world)
+            point_ego = np.dot(
+                np.linalg.inv(rotation_ego_to_world),
+                point_world - translation_ego_to_world,
+            )
 
             # Transform the addressing point from ego frame to camera frame
-            # rotation_camera_to_ego = Quaternion(
-            #     sensor_calibration["rotation"]
-            # ).rotation_matrix
-            # translation_camera_to_ego = np.array(sensor_calibration["translation"])
+            rotation_camera_to_ego = Quaternion(
+                sensor_calibration["rotation"]
+            ).rotation_matrix
+            translation_camera_to_ego = np.array(sensor_calibration["translation"])
 
             # Inverse transformation
-            # point_camera = np.dot(
-            #     np.linalg.inv(rotation_camera_to_ego),
-            #     point_ego - translation_camera_to_ego,
-            # )
+            point_camera = np.dot(
+                np.linalg.inv(rotation_camera_to_ego),
+                point_ego - translation_camera_to_ego,
+            )
 
             distance = math.sqrt(
                 point_camera[0] ** 2 + point_camera[1] ** 2 + point_camera[2] ** 2

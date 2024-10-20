@@ -119,7 +119,7 @@ async def get_locations():
 
 @app.get("/get_geo_location/{location}")
 async def get_geo_location(ego_location: str, location: str):
-    ego_pose_path = f"./data/server_camera_poses/{ego_location}.json"
+    ego_pose_path = f"./data/server_ego_poses/{ego_location}.json"
     with open(ego_pose_path, "r") as f:
         ego_pose = json.load(f)
         location_z = float(location.split("_")[0])
@@ -127,21 +127,18 @@ async def get_geo_location(ego_location: str, location: str):
         location_y = float(location.split("_")[2])
         point_camera = [location_x, location_y, location_z]
 
-        lat, lon, alt = (
-            float(ego_location.split("_")[0]),
-            float(ego_location.split("_")[1]),
-            float(ego_location.split("_")[2]),
-        )
-        reference_loc = {"lat": lat, "lon": lon, "alt": alt}
+        # point_camera_hom = np.array(
+        #     point_camera
+        # )  # Convert to homogeneous coordinates (x, y, z, 1)
 
-        point_camera_hom = np.array(
-            point_camera
-        )  # Convert to homogeneous coordinates (x, y, z, 1)
-
-        rotation_camera_to_ego = np.array(ego_pose["rotation_matrix"])
+        # rotation_camera_to_ego = Quaternion(
+        #     sensor_calibration["rotation"]
+        # ).rotation_matrix
         # translation_camera_to_ego = np.array(sensor_calibration["translation"])
 
-        point_ego = np.dot(rotation_camera_to_ego, point_camera)
+        # point_ego = (
+        #     np.dot(rotation_camera_to_ego, point_camera) + translation_camera_to_ego
+        # )
 
         # # 2. Transform point from ego vehicle frame to world frame
         # rotation_ego_to_world = np.array(ego_pose["rotation"])
@@ -151,7 +148,7 @@ async def get_geo_location(ego_location: str, location: str):
         #     np.dot(rotation_ego_to_world, point_ego) + translation_ego_to_world
         # )
 
-        geo_location = compute_new_location(reference_loc, point_ego)
+        geo_location = compute_new_location(reference_loc, point_camera)
     return geo_location
 
 
@@ -159,7 +156,7 @@ async def get_geo_location(ego_location: str, location: str):
 async def save_addressing_point(
     ego_location: str, location: str, type: str = "Undefined"
 ):
-    ego_pose_path = f"./data/server_camera_poses/{ego_location}.json"
+    ego_pose_path = f"./data/server_ego_poses/{ego_location}.json"
     addressing_points_path = f"./addressing_points.json"
 
     addressing_points = {}
@@ -173,32 +170,30 @@ async def save_addressing_point(
         location_y = float(location.split("_")[2])
         point_camera = [location_x, location_y, location_z]
 
-        lat, lon, alt = (
-            float(ego_location.split("_")[0]),
-            float(ego_location.split("_")[1]),
-            float(ego_location.split("_")[2]),
-        )
-        reference_loc = {"lat": lat, "lon": lon, "alt": alt}
-
         point_camera_hom = np.array(
             point_camera
         )  # Convert to homogeneous coordinates (x, y, z, 1)
 
-        rotation_camera_to_ego = np.array(ego_pose["rotation_matrix"])
-        # translation_camera_to_ego = np.array(sensor_calibration["translation"])
+        rotation_camera_to_ego = Quaternion(
+            sensor_calibration["rotation"]
+        ).rotation_matrix
+        translation_camera_to_ego = np.array(sensor_calibration["translation"])
 
-        point_ego = np.dot(rotation_camera_to_ego, point_camera)
+        point_ego = (
+            np.dot(rotation_camera_to_ego, point_camera) + translation_camera_to_ego
+        )
 
-        # # 2. Transform point from ego vehicle frame to world frame
-        # rotation_ego_to_world = np.array(ego_pose["rotation"])
-        # translation_ego_to_world = np.array(ego_pose["translation"])
+        # 2. Transform point from ego vehicle frame to world frame
+        rotation_ego_to_world = Quaternion(ego_pose["rotation"]).rotation_matrix
+        translation_ego_to_world = np.array(ego_pose["translation"])
 
-        # point_world = (
-        #     np.dot(rotation_ego_to_world, point_ego) + translation_ego_to_world
-        # )
-        point_world = point_ego + np.array(ego_pose["translation_vector"])
+        point_world = (
+            np.dot(rotation_ego_to_world, point_ego) + translation_ego_to_world
+        )
 
-        geo_location = compute_new_location(reference_loc, point_world)
+        geo_location = compute_new_location(
+            reference_loc, point_world, ego_pose["rotation"]
+        )
 
         geo_location_str = (
             f"{geo_location[0]:.9f}_{geo_location[1]:.9f}_{geo_location[2]:.2f}_{type}"
@@ -279,29 +274,32 @@ async def get_camera_addressing_points(ego_location: str):
         with open(addressing_points_path, "r") as f:
             addressing_points = json.load(f)
     camera_addressing_points_dict = {}
-    ego_pose_path = f"./data/server_camera_poses/{ego_location}.json"
+    ego_pose_path = f"./data/server_ego_poses/{ego_location}.json"
     with open(ego_pose_path, "r") as f:
         ego_pose = json.load(f)
         for key, value in addressing_points.items():
             # Transform the addressing point from world frame to ego frame
-            rotation_camera_to_ego = np.array(ego_pose["rotation_matrix"])
+            rotation_ego_to_world = Quaternion(ego_pose["rotation"]).rotation_matrix
+            translation_ego_to_world = np.array(ego_pose["translation"])
             point_world = np.array([float(i) for i in value.split("_")])
-            point_world = point_world - np.array(ego_pose["translation_vector"])
 
             # Inverse transformation
-            point_camera = np.dot(np.linalg.inv(rotation_camera_to_ego), point_world)
+            point_ego = np.dot(
+                np.linalg.inv(rotation_ego_to_world),
+                point_world - translation_ego_to_world,
+            )
 
             # Transform the addressing point from ego frame to camera frame
-            # rotation_camera_to_ego = Quaternion(
-            #     sensor_calibration["rotation"]
-            # ).rotation_matrix
-            # translation_camera_to_ego = np.array(sensor_calibration["translation"])
+            rotation_camera_to_ego = Quaternion(
+                sensor_calibration["rotation"]
+            ).rotation_matrix
+            translation_camera_to_ego = np.array(sensor_calibration["translation"])
 
             # Inverse transformation
-            # point_camera = np.dot(
-            #     np.linalg.inv(rotation_camera_to_ego),
-            #     point_ego - translation_camera_to_ego,
-            # )
+            point_camera = np.dot(
+                np.linalg.inv(rotation_camera_to_ego),
+                point_ego - translation_camera_to_ego,
+            )
 
             distance = math.sqrt(
                 point_camera[0] ** 2 + point_camera[1] ** 2 + point_camera[2] ** 2

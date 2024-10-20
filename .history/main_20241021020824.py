@@ -279,7 +279,7 @@ async def get_camera_addressing_points(ego_location: str):
         with open(addressing_points_path, "r") as f:
             addressing_points = json.load(f)
     camera_addressing_points_dict = {}
-    ego_pose_path = f"./data/server_camera_poses/{ego_location}.json"
+    ego_pose_path = f"./data/server_ego_poses/{ego_location}.json"
     with open(ego_pose_path, "r") as f:
         ego_pose = json.load(f)
         for key, value in addressing_points.items():

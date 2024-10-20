@@ -198,7 +198,9 @@ async def save_addressing_point(
         # )
         point_world = point_ego + np.array(ego_pose["translation_vector"])
 
-        geo_location = compute_new_location(reference_loc, point_world)
+        geo_location = compute_new_location(
+            reference_loc, point_world, ego_pose["rotation"]
+        )
 
         geo_location_str = (
             f"{geo_location[0]:.9f}_{geo_location[1]:.9f}_{geo_location[2]:.2f}_{type}"
@@ -279,29 +281,28 @@ async def get_camera_addressing_points(ego_location: str):
         with open(addressing_points_path, "r") as f:
             addressing_points = json.load(f)
     camera_addressing_points_dict = {}
-    ego_pose_path = f"./data/server_camera_poses/{ego_location}.json"
+    ego_pose_path = f"./data/server_ego_poses/{ego_location}.json"
     with open(ego_pose_path, "r") as f:
         ego_pose = json.load(f)
         for key, value in addressing_points.items():
             # Transform the addressing point from world frame to ego frame
-            rotation_camera_to_ego = np.array(ego_pose["rotation_matrix"])
+            rotation_ego_to_world = np.array(ego_pose["rotation_matrix"])
             point_world = np.array([float(i) for i in value.split("_")])
-            point_world = point_world - np.array(ego_pose["translation_vector"])
 
             # Inverse transformation
-            point_camera = np.dot(np.linalg.inv(rotation_camera_to_ego), point_world)
+            point_ego = np.dot(np.linalg.inv(rotation_ego_to_world))
 
             # Transform the addressing point from ego frame to camera frame
-            # rotation_camera_to_ego = Quaternion(
-            #     sensor_calibration["rotation"]
-            # ).rotation_matrix
-            # translation_camera_to_ego = np.array(sensor_calibration["translation"])
+            rotation_camera_to_ego = Quaternion(
+                sensor_calibration["rotation"]
+            ).rotation_matrix
+            translation_camera_to_ego = np.array(sensor_calibration["translation"])
 
             # Inverse transformation
-            # point_camera = np.dot(
-            #     np.linalg.inv(rotation_camera_to_ego),
-            #     point_ego - translation_camera_to_ego,
-            # )
+            point_camera = np.dot(
+                np.linalg.inv(rotation_camera_to_ego),
+                point_ego - translation_camera_to_ego,
+            )
 
             distance = math.sqrt(
                 point_camera[0] ** 2 + point_camera[1] ** 2 + point_camera[2] ** 2
