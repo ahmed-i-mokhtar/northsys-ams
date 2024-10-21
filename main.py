@@ -196,9 +196,9 @@ async def save_addressing_point(
         # point_world = (
         #     np.dot(rotation_ego_to_world, point_ego) + translation_ego_to_world
         # )
-        point_world = point_ego + np.array(ego_pose["translation_vector"])
+        # point_world = point_ego - np.array(ego_pose["translation_vector"])
 
-        geo_location = compute_new_location(reference_loc, point_world)
+        geo_location = compute_new_location(reference_loc, -point_ego)
 
         geo_location_str = (
             f"{geo_location[0]:.9f}_{geo_location[1]:.9f}_{geo_location[2]:.2f}_{type}"
@@ -206,7 +206,7 @@ async def save_addressing_point(
 
         logger.debug(f"geo_location_str: {geo_location_str}")
 
-        point_world_str = f"{point_world[0]}_{point_world[1]}_{point_world[2]}"
+        point_world_str = f"{point_ego[0]}_{point_ego[1]}_{point_ego[2]}"
         addressing_points[geo_location_str] = point_world_str
 
     # Save the addressing points
