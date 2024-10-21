@@ -34,6 +34,8 @@ for location in locations:
     location_name = os.path.basename(location).split(".json")[0]
     locations_list.append(location_name)
 
+reference_loc = {}
+
 
 sensor_calibration = {
     "camera_intrinsic": [
@@ -75,17 +77,6 @@ def compute_new_location(reference_gps, translation):
 
     # Return new latitude, longitude, and altitude
     return new_location.latitude, new_location.longitude, new_altitude
-
-
-reference_loc_str = compute_new_location(
-    {"lat": 23.586242, "lon": 58.145658, "alt": 48.25},
-    -np.array([146.102, 80.233, 48.25]),
-)
-reference_loc = {
-    "lat": float(reference_loc_str[0]),
-    "lon": float(reference_loc_str[1]),
-    "alt": float(reference_loc_str[2]),
-}
 
 
 @app.get("/")
@@ -178,9 +169,24 @@ async def save_addressing_point(
     with open(ego_pose_path, "r") as f:
         ego_pose = json.load(f)
         location_x = float(location.split("_")[0])
-        location_y = -float(location.split("_")[1])
+        location_y = float(location.split("_")[1])
         location_z = float(location.split("_")[2])
         point_camera = [location_x, location_y, location_z]
+
+        lat, lon, alt = (
+            float(ego_location.split("_")[0]),
+            float(ego_location.split("_")[1]),
+            float(ego_location.split("_")[2]),
+        )
+        reference_loc = {"lat": lat, "lon": lon, "alt": alt}
+        geo_reference_loc = compute_new_location(
+            reference_loc, -np.array(ego_pose["translation_vector"])
+        )
+        reference_loc = {
+            "lat": geo_reference_loc[0],
+            "lon": geo_reference_loc[1],
+            "alt": geo_reference_loc[2],
+        }
 
         point_camera_hom = np.array(
             point_camera
@@ -188,9 +194,7 @@ async def save_addressing_point(
 
         # rotation_camera_to_ego = np.array(ego_pose["rotation_matrix"])
         yaw = ego_pose["yaw"]
-
         yaw = math.radians(yaw)
-
         rotation_camera_to_ego = np.array(
             [
                 [math.cos(yaw), -math.sin(yaw), 0],
@@ -201,11 +205,10 @@ async def save_addressing_point(
 
         # translation_camera_to_ego = np.array(sensor_calibration["translation"])
         # log point_camera
-        logger.debug(f"point_camera: {point_camera}")
-        # point_ego = np.array(point_camera)
-        point_ego = np.array(point_camera) @ rotation_camera_to_ego
 
-        point_world = np.array(ego_pose["translation_vector"]) + point_ego
+        point_ego = np.dot(
+            np.linalg.inv(rotation_camera_to_ego), np.array(point_camera)
+        ) + np.array(ego_pose["translation_vector"])
 
         # # 2. Transform point from ego vehicle frame to world frame
         # rotation_ego_to_world = np.array(ego_pose["rotation"])
@@ -216,7 +219,7 @@ async def save_addressing_point(
         # )
         # point_world = point_ego - np.array(ego_pose["translation_vector"])
 
-        geo_location = compute_new_location(reference_loc, point_world)
+        geo_location = compute_new_location(reference_loc, point_ego)
 
         geo_location_str = (
             f"{geo_location[0]:.9f}_{geo_location[1]:.9f}_{geo_location[2]:.2f}_{type}"
@@ -224,7 +227,7 @@ async def save_addressing_point(
 
         logger.debug(f"geo_location_str: {geo_location_str}")
 
-        point_world_str = f"{point_world[0]}_{point_world[1]}_{point_world[2]}"
+        point_world_str = f"{point_ego[0]}_{point_ego[1]}_{point_ego[2]}"
         addressing_points[geo_location_str] = point_world_str
 
     # Save the addressing points
@@ -302,8 +305,9 @@ async def get_camera_addressing_points(ego_location: str):
         ego_pose = json.load(f)
         for key, value in addressing_points.items():
             # Transform the addressing point from world frame to ego frame
-            # rotation_camera_to_ego = np.array(ego_pose["rotation_matrix"])
+            rotation_camera_to_ego = np.array(ego_pose["rotation_matrix"])
             point_world = np.array([float(i) for i in value.split("_")])
+
             point_world = point_world - np.array(ego_pose["translation_vector"])
             yaw = ego_pose["yaw"]
             yaw = math.radians(yaw)
@@ -316,7 +320,7 @@ async def get_camera_addressing_points(ego_location: str):
             )
 
             # Inverse transformation
-            point_camera = point_world @ rotation_camera_to_ego.T
+            point_camera = np.dot(rotation_camera_to_ego, point_world)
 
             # Transform the addressing point from ego frame to camera frame
             # rotation_camera_to_ego = Quaternion(
@@ -336,7 +340,7 @@ async def get_camera_addressing_points(ego_location: str):
 
             if distance < 25:
                 camera_addressing_points_dict[key] = (
-                    f"{point_camera[0]}_{-point_camera[1]}_{point_camera[2]}"
+                    f"{point_camera[0]}_{point_camera[1]}_{point_camera[2]}"
                 )
 
     return camera_addressing_points_dict

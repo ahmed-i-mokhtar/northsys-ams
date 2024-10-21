@@ -304,6 +304,10 @@ async def get_camera_addressing_points(ego_location: str):
             # Transform the addressing point from world frame to ego frame
             # rotation_camera_to_ego = np.array(ego_pose["rotation_matrix"])
             point_world = np.array([float(i) for i in value.split("_")])
+            
+            yaw = ego_pose["yaw"]
+            yaw = math.radians(yaw)
+
             point_world = point_world - np.array(ego_pose["translation_vector"])
             yaw = ego_pose["yaw"]
             yaw = math.radians(yaw)
@@ -316,7 +320,7 @@ async def get_camera_addressing_points(ego_location: str):
             )
 
             # Inverse transformation
-            point_camera = point_world @ rotation_camera_to_ego.T
+            point_camera = np.dot(np.linalg.inv(rotation_camera_to_ego), point_world)
 
             # Transform the addressing point from ego frame to camera frame
             # rotation_camera_to_ego = Quaternion(
@@ -336,7 +340,7 @@ async def get_camera_addressing_points(ego_location: str):
 
             if distance < 25:
                 camera_addressing_points_dict[key] = (
-                    f"{point_camera[0]}_{-point_camera[1]}_{point_camera[2]}"
+                    f"{point_camera[0]}_{point_camera[1]}_{point_camera[2]}"
                 )
 
     return camera_addressing_points_dict
