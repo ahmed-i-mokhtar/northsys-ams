@@ -194,7 +194,6 @@ async def save_addressing_point(
 
         # rotation_camera_to_ego = np.array(ego_pose["rotation_matrix"])
         yaw = ego_pose["yaw"]
-        yaw = math.radians(yaw)
         rotation_camera_to_ego = np.array(
             [
                 [math.cos(yaw), -math.sin(yaw), 0],
@@ -310,7 +309,6 @@ async def get_camera_addressing_points(ego_location: str):
 
             point_world = point_world - np.array(ego_pose["translation_vector"])
             yaw = ego_pose["yaw"]
-            yaw = math.radians(yaw)
             rotation_camera_to_ego = np.array(
                 [
                     [math.cos(yaw), -math.sin(yaw), 0],
