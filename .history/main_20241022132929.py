@@ -217,10 +217,9 @@ async def save_addressing_point(
         # point_world = point_ego - np.array(ego_pose["translation_vector"])
 
         geo_location = compute_new_location(reference_loc, point_world)
-        id = location.split("_")[3]
 
         geo_location_str = (
-            f"{geo_location[0]:.9f}_{geo_location[1]:.9f}_{geo_location[2]:.2f}_{type}_{id}"
+            f"{geo_location[0]:.9f}_{geo_location[1]:.9f}_{geo_location[2]:.2f}_{type}_{location.split("_")[3]}"
         )
 
         point_world_str = f"{point_world[0]}_{point_world[1]}_{point_world[2]}"
