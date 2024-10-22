@@ -284,8 +284,6 @@ async def get_world_addressing_points():
             addressing_points = json.load(f)
     addressing_points_list = []
     for key, value in addressing_points.items():
-        id = value["id"]
-        key = key + "_" + str(id)
         addressing_points_list.append(key)
 
     return addressing_points_list
@@ -307,7 +305,7 @@ async def get_camera_addressing_points(ego_location: str):
             # rotation_camera_to_ego = np.array(ego_pose["rotation_matrix"])
             world = value["world"]
             id = value["id"]
-            point_world = np.array([float(i) for i in world.split("_")])
+            point_world = np.array([float(i) for i in value.split("_")])
             point_world = point_world - np.array(ego_pose["translation_vector"])
             yaw = ego_pose["yaw"]
             yaw = math.radians(yaw)

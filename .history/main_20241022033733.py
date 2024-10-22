@@ -307,7 +307,7 @@ async def get_camera_addressing_points(ego_location: str):
             # rotation_camera_to_ego = np.array(ego_pose["rotation_matrix"])
             world = value["world"]
             id = value["id"]
-            point_world = np.array([float(i) for i in world.split("_")])
+            point_world = np.array([float(i) for i in value.split("_")])
             point_world = point_world - np.array(ego_pose["translation_vector"])
             yaw = ego_pose["yaw"]
             yaw = math.radians(yaw)
