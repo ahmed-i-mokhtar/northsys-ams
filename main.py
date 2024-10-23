@@ -219,9 +219,7 @@ async def save_addressing_point(
         geo_location = compute_new_location(reference_loc, point_world)
         id = location.split("_")[3]
 
-        geo_location_str = (
-            f"{geo_location[0]:.9f}_{geo_location[1]:.9f}_{geo_location[2]:.2f}_{type}_{id}"
-        )
+        geo_location_str = f"{geo_location[0]:.9f}_{geo_location[1]:.9f}_{geo_location[2]:.2f}_{type}_{id}"
 
         point_world_str = f"{point_world[0]}_{point_world[1]}_{point_world[2]}"
         addressing_points[geo_location_str] = {
@@ -308,8 +306,12 @@ async def get_camera_addressing_points(ego_location: str):
             # Transform the addressing point from world frame to ego frame
             # rotation_camera_to_ego = np.array(ego_pose["rotation_matrix"])
             world = value["world"]
+
             id = value["id"]
             point_world = np.array([float(i) for i in world.split("_")])
+            if point_world[2] == 0:
+                point_world[2] = np.array(ego_pose["translation_vector"])[2] - 1.5
+
             point_world = point_world - np.array(ego_pose["translation_vector"])
             yaw = ego_pose["yaw"]
             yaw = math.radians(yaw)
