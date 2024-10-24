@@ -233,7 +233,6 @@ async def save_addressing_point(
 
     for key, value in addressing_points.items():
         point_world = np.array([float(i) for i in value["world"].split("_")])
-        point_world = point_world - np.array(ego_pose["translation_vector"])
         distance = math.sqrt(
             point_world[0] ** 2 + point_world[1] ** 2 + point_world[2] ** 2
         )
