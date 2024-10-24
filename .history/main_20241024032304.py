@@ -341,7 +341,7 @@ async def get_camera_addressing_points(ego_location: str):
                 point_camera[0] ** 2 + point_camera[1] ** 2 + point_camera[2] ** 2
             )
 
-            if distance < 25:
+            if distance < 30:
                 camera_addressing_points_dict[key] = (
                     f"{point_camera[0]}_{-point_camera[1]}_{point_camera[2]}_{id}"
                 )

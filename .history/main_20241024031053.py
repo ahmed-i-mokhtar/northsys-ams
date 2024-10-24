@@ -226,9 +226,19 @@ async def save_addressing_point(
             "id": location.split("_")[3],
         }
 
+    # Filter addressing points that are within 100 meters
     # Save the addressing points
     with open(addressing_points_path, "w") as f:
         json.dump(addressing_points, f)
+
+    for key, value in addressing_points.items():
+        point_world = np.array([float(i) for i in value["world"].split("_")])
+        point_world = point_world - np.array(ego_pose["translation_vector"])
+        distance = math.sqrt(
+            point_world[0] ** 2 + point_world[1] ** 2 + point_world[2] ** 2
+        )
+        if distance > 100:
+            addressing_points.pop(key)
 
     return addressing_points
 
@@ -341,7 +351,7 @@ async def get_camera_addressing_points(ego_location: str):
                 point_camera[0] ** 2 + point_camera[1] ** 2 + point_camera[2] ** 2
             )
 
-            if distance < 25:
+            if distance < 30:
                 camera_addressing_points_dict[key] = (
                     f"{point_camera[0]}_{-point_camera[1]}_{point_camera[2]}_{id}"
                 )
@@ -375,6 +385,7 @@ async def delete_addressing_point(geo_location: str):
         # save the addressing points
         with open(addressing_points_path, "w") as f:
             json.dump(addressing_points, f)
+
         return addressing_points
     else:
         return {"error": "Addressing point not found"}
