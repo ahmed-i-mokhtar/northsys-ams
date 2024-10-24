@@ -258,15 +258,15 @@ async def update_addressing_point(id: str, type: str = "Undefined"):
                 if current_key == location_key:
                     # remove the old key and add the new key
                     world_point = value["world"]
-                    id = str(value["id"])
+                    id = value["id"]
                     addressing_points.pop(key)
-                    addressing_points[location_key + "_" + type + "_" + id] = {
-                        "id": id,
+                    addressing_points[location_key + "_" + type] = {
+                        "id" : id,
                         "world": world_point.split("_")[0]
                         + "_"
                         + world_point.split("_")[1]
                         + "_"
-                        + world_point.split("_")[2],
+                        + world_point.split("_")[2]
                     }
                     break
 
