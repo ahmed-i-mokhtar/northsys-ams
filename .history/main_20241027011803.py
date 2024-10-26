@@ -33,13 +33,13 @@ sequence_path = "./sequence.json"
 with open(sequence_path, "r") as f:
     sequence = json.load(f)
     for location in sequence:
-        locations_list.append(sequence[location])
+        locations_list.append(location)
 # locations = glob.glob("./data/server_camera_poses/*.json")
 # for location in locations:
 #     # use os path to get the file name
 #     location_name = os.path.basename(location).split(".json")[0]
 #     locations_list.append(location_name)
-
+print(locations_list)
 
 sensor_calibration = {
     "camera_intrinsic": [
@@ -360,15 +360,6 @@ async def get_camera_addressing_points(ego_location: str):
                 )
 
     return camera_addressing_points_dict
-
-
-# Create api to get ego pose yaw
-@app.get("/get_ego_pose_yaw/{ego_location}")
-async def get_ego_pose_yaw(ego_location: str):
-    ego_pose_path = f"./data/server_camera_poses/{ego_location}.json"
-    with open(ego_pose_path, "r") as f:
-        ego_pose = json.load(f)
-        return ego_pose["yaw"]
 
 
 @app.get("/get_geo_addressing_points")

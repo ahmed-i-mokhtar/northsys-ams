@@ -362,15 +362,6 @@ async def get_camera_addressing_points(ego_location: str):
     return camera_addressing_points_dict
 
 
-# Create api to get ego pose yaw
-@app.get("/get_ego_pose_yaw/{ego_location}")
-async def get_ego_pose_yaw(ego_location: str):
-    ego_pose_path = f"./data/server_camera_poses/{ego_location}.json"
-    with open(ego_pose_path, "r") as f:
-        ego_pose = json.load(f)
-        return ego_pose["yaw"]
-
-
 @app.get("/get_geo_addressing_points")
 async def get_addressing_points():
     addressing_points_path = f"./addressing_points.json"

@@ -28,17 +28,11 @@ app.add_middleware(
 
 locations_list = []
 
-# read sequence.json
-sequence_path = "./sequence.json"
-with open(sequence_path, "r") as f:
-    sequence = json.load(f)
-    for location in sequence:
-        locations_list.append(sequence[location])
-# locations = glob.glob("./data/server_camera_poses/*.json")
-# for location in locations:
-#     # use os path to get the file name
-#     location_name = os.path.basename(location).split(".json")[0]
-#     locations_list.append(location_name)
+locations = glob.glob("./data/server_camera_poses/*.json")
+for location in locations:
+    # use os path to get the file name
+    location_name = os.path.basename(location).split(".json")[0]
+    locations_list.append(location_name)
 
 
 sensor_calibration = {
@@ -354,21 +348,12 @@ async def get_camera_addressing_points(ego_location: str):
                 point_camera[0] ** 2 + point_camera[1] ** 2 + point_camera[2] ** 2
             )
 
-            if distance < 50:
+            if distance < 25:
                 camera_addressing_points_dict[key] = (
                     f"{point_camera[0]}_{-point_camera[1]}_{point_camera[2]}_{id}"
                 )
 
     return camera_addressing_points_dict
-
-
-# Create api to get ego pose yaw
-@app.get("/get_ego_pose_yaw/{ego_location}")
-async def get_ego_pose_yaw(ego_location: str):
-    ego_pose_path = f"./data/server_camera_poses/{ego_location}.json"
-    with open(ego_pose_path, "r") as f:
-        ego_pose = json.load(f)
-        return ego_pose["yaw"]
 
 
 @app.get("/get_geo_addressing_points")
@@ -388,18 +373,16 @@ async def get_addressing_points():
 async def delete_addressing_point(geo_location: str):
     addressing_points_path = f"./addressing_points.json"
     addressing_points = {}
-    deleted_addressing_point = {}
     if os.path.exists(addressing_points_path):
         with open(addressing_points_path, "r") as f:
             addressing_points = json.load(f)
     if geo_location in addressing_points:
-        deleted_addressing_point[geo_location] = addressing_points[geo_location]
         del addressing_points[geo_location]
 
         # save the addressing points
         with open(addressing_points_path, "w") as f:
             json.dump(addressing_points, f)
-        return deleted_addressing_point
+        return addressing_points
     else:
         return {"error": "Addressing point not found"}
 
